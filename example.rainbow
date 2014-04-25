@@ -1,0 +1,16 @@
+set @a %0
+set @b %1
+lbl loop
+-iterate
+-print
+-loop
+lbl iterate
+set @c @b
+add @a @b @b
+set @a @c
+end
+lbl print
+disp @b
+disp $\\\\
+delay %1
+end

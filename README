@@ -1,0 +1,3 @@
+Im too lazy to document the syntax of the language or anything that would require typing more than 4 lines at the moment (its 4 am), so Ill write a better readme later when I can be assed to
+I suggest looking through the interpreters source code + example.rainbows to get an idea of how rainbows.l works...
+To run a file containing Rainbows.l code fire up a shell and type: rainbows.l.py pathtofile 	Ex. rainbows.l.py example.rainbows
