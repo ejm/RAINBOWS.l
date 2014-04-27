@@ -1,14 +1,16 @@
 #RAINBOWS.l Interpreter by Douglas Reilly
 from sys import stdin, stdout, argv
 import time
-code = open(argv[1],'r').read()
+#code = open(argv[1],'r').read()
+code = '''func eval %1 pyth $evaluate("|1")
+disp _$[Name: ]'''
 data_types = {
     '$':'string',
+    'h$':'hex string',
     '%':'integer',
     '@':'variable',
     '_':'input',
 }
-stack = deque([0,0,0])
 flags = {'ifstat':0,'moveahead':1,'pointer':0,'setmode':0,'back':0,}
 variables = {}
 arguments = []
@@ -16,12 +18,13 @@ functions = {}
 lines = code.split('\n')
 error = lambda line: print('"%s" Contained Error'%line)
 label = lambda var: var.replace('@','')
+chunks = lambda l,n: [l[i:i+n] for i in range(0, len(l), n)] if n>1 else [l[i:i+1] for i in range(0, len(l), 1)]
 def data(arg):
-    if type(arg)==list:
-        arg = ' '.join(arg)
     if Type(arg)=='string':
         if flags['setmode']: return arg
         else: return str(arg[1:]).replace('>n','\n').replace('>t','\t').replace('>:',';')
+    if Type(arg)=='hex string':
+        return data('$%s'%''.join([chr(int(c,16)) for c in chunks(arg[2:],2)]))
     if Type(arg)=='integer':
         if flags['setmode']: return arg
         else: return int(arg[1:])
@@ -90,7 +93,7 @@ def evaluate(line):
         if tokens[0]=='call':
             expr = functions[tokens[1]]['expression']
             for i in range(functions[tokens[1]]['number_of_arguments']):
-                expr = expr.replace('|%d'%i,str(data(' '.join(tokens[2:]).split(',')[i])))
+                expr = expr.replace('|%d'%(i+1),str(data(' '.join(tokens[2:]).split(',')[i])))
             evaluate(expr)
         if tokens[0]=='read':
             try: variables[label(tokens[2])]='$%s'%open(data(tokens[1]),'r').read()
@@ -98,15 +101,13 @@ def evaluate(line):
         if tokens[0]=='write':
             try: open(data(tokens[1]),'w').write(data(' '.join(tokens[2:]))).close()
             except: pass
-        if tokens[0]=='stack':
-            if tokens[1]=='push': stack.append(' '.join(tokens[2:]))
-        
- 
-        
+        if tokens[0]=='pyth':
+            exec(data(' '.join(tokens[1:])))
+
         
             
             
-parsedcode = [line[:line.index('`')-1] if '`' in line else line for line in code.split('\n')]
+parsedcode = [line[:line.index('#')-1] if '#' in line else line for line in code.split('\n')]
 while flags['pointer']<len(parsedcode):
     evaluate(parsedcode[flags['pointer']])
     flags['pointer']+=flags['moveahead']
